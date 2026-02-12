@@ -3,15 +3,443 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Detalj Sökare</title>
-<link rel="stylesheet" href="style.css">
+<title>L101 Lager</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #eef2f7;
+  --card: #ffffff;
+  --primary: #1e40af;
+  --primary-light: #3b82f6;
+  --primary-soft: #dbeafe;
+  --primary-hover: #1e3a8a;
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --success: #16a34a;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 14px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 12px rgba(30,58,138,0.25);
+}
+
+.header h1 { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 0.3px; }
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  font-size: 15px;
+  color: #fff;
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 500;
+  backdrop-filter: blur(4px);
+}
+
+.btn-back:active { background: rgba(255,255,255,0.25); }
+
+.btn-menu {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.btn-menu:active { background: rgba(255,255,255,0.25); }
+.btn-menu svg { width: 24px; height: 24px; color: #fff; }
+.header-spacer { width: 46px; }
+
+/* Menu overlay */
+.menu-overlay { display: none; position: fixed; inset: 0; z-index: 99; }
+.menu-overlay.open { display: block; }
+.menu-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(2px); }
+
+.menu-panel {
+  position: absolute;
+  top: 68px;
+  right: 12px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+  min-width: 240px;
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 20px;
+  text-align: left;
+  border: none;
+  background: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.menu-item:last-child { border-bottom: none; }
+.menu-item:active { background: var(--primary-soft); }
+
+.menu-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--primary-light);
+  flex-shrink: 0;
+}
+
+/* Screens */
+.screen { display: none; padding: 24px 20px; max-width: 600px; margin: 0 auto; }
+.screen.active { display: block; animation: fadeIn 0.2s ease; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Search screen */
+.search-wrap { position: relative; margin-bottom: 24px; }
+
+.search-input {
+  width: 100%;
+  padding: 18px 20px 18px 54px;
+  font-size: 20px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow);
+}
+
+.search-input:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(59,130,246,0.12), var(--shadow);
+}
+
+.search-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.search-icon svg { width: 22px; height: 22px; }
+.results-list { display: flex; flex-direction: column; gap: 10px; }
+
+.result-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+
+.result-item:active {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-lg);
+  transform: scale(0.985);
+}
+
+.result-id {
+  font-size: 18px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  flex: 1;
+}
+
+.result-arrow {
+  color: var(--text-muted);
+  font-size: 16px;
+  margin: 0 14px;
+}
+
+.result-location {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-soft);
+  padding: 6px 14px;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
+}
+
+.no-results { text-align: center; color: var(--text-muted); padding: 48px 20px; font-size: 17px; }
+
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 80px 20px 60px;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.empty-state-icon {
+  width: 56px;
+  height: 56px;
+  color: var(--border);
+  margin-bottom: 16px;
+}
+
+/* Detail view */
+.detail-card {
+  background: var(--card);
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+  padding: 40px 28px;
+  text-align: center;
+  margin-top: 24px;
+  border-top: 4px solid var(--primary-light);
+}
+
+.detail-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.detail-id {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.detail-divider {
+  width: 40px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+.detail-location {
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: 1px;
+}
+
+.detail-location-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  margin-top: 20px;
+}
+
+/* Forms */
+.form-group { margin-bottom: 22px; }
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 16px 18px;
+  font-size: 18px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow);
+}
+
+.form-input:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(59,130,246,0.12), var(--shadow);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 32px;
+  font-size: 17px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btn:active { transform: scale(0.98); }
+
+.btn-primary {
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(30,64,175,0.3);
+}
+.btn-primary:active { background: linear-gradient(135deg, #1e3a8a, #2563eb); }
+.btn-primary:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  margin-top: 12px;
+  box-shadow: 0 2px 8px rgba(220,38,38,0.2);
+}
+.btn-danger:active { background: var(--danger-hover); }
+
+.btn-outline { background: var(--card); color: var(--text); border: 2px solid var(--border); }
+.btn-outline:active { background: var(--bg); }
+
+.btn-row { display: flex; gap: 12px; margin-top: 12px; }
+.btn-row .btn { flex: 1; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--success);
+  color: #fff;
+  padding: 14px 28px;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 600;
+  z-index: 200;
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(22,163,74,0.3);
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* Dialog */
+.dialog-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+  z-index: 150;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.dialog-overlay.open { display: flex; }
+
+.dialog {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 32px 28px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  animation: dialogIn 0.25s ease;
+}
+
+@keyframes dialogIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.dialog p { font-size: 17px; line-height: 1.5; margin-bottom: 24px; text-align: center; }
+
+/* Edit search */
+.edit-search-results { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.count-badge { font-size: 13px; color: var(--text-muted); margin-top: 8px; text-align: center; }
+
+/* Import */
+.file-input-wrap { position: relative; margin-bottom: 20px; }
+
+.file-input-wrap input[type=file] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.file-input-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 20px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--text-muted);
+  font-size: 16px;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.file-input-label:active {
+  border-color: var(--primary-light);
+  background: var(--primary-soft);
+}
+
+.file-input-label svg { width: 40px; height: 40px; }
+.file-name { font-weight: 600; color: var(--text); }
+</style>
 </head>
 <body>
 
-<!-- Header -->
 <div class="header">
   <div id="headerLeft" class="header-spacer"></div>
-  <h1 id="headerTitle">Detalj Sökare</h1>
+  <h1 id="headerTitle">L101 Lager</h1>
   <button class="btn-menu" id="menuBtn" aria-label="Meny">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
       <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
@@ -19,19 +447,32 @@
   </button>
 </div>
 
-<!-- Menu -->
 <div class="menu-overlay" id="menuOverlay">
   <div class="menu-backdrop" id="menuBackdrop"></div>
   <div class="menu-panel">
-    <button class="menu-item" onclick="navigate('add')">Lägg till detalj</button>
-    <button class="menu-item" onclick="navigate('edit')">Ändra detalj</button>
-    <button class="menu-item" onclick="exportData()">Exportera data</button>
-    <button class="menu-item" onclick="navigate('import')">Importera data</button>
-    <button class="menu-item" onclick="navigate('search')">Tillbaka</button>
+    <button class="menu-item" onclick="navigate('add')">
+      <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Lägg till detalj
+    </button>
+    <button class="menu-item" onclick="navigate('edit')">
+      <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Ändra detalj
+    </button>
+    <button class="menu-item" onclick="exportData()">
+      <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Exportera data
+    </button>
+    <button class="menu-item" onclick="navigate('import')">
+      <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Importera data
+    </button>
+    <button class="menu-item" onclick="navigate('search')">
+      <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Tillbaka
+    </button>
   </div>
 </div>
 
-<!-- Search Screen -->
 <div class="screen active" id="screenSearch">
   <div class="search-wrap">
     <span class="search-icon">
@@ -44,16 +485,16 @@
   <div id="searchResults"></div>
 </div>
 
-<!-- Detail Screen -->
 <div class="screen" id="screenDetail">
   <div class="detail-card">
+    <div class="detail-label">Detalj ID</div>
     <div class="detail-id" id="detailId"></div>
-    <div class="detail-divider">&#8595;</div>
+    <div class="detail-divider"></div>
+    <div class="detail-label">Plats</div>
     <div class="detail-location" id="detailLocation"></div>
   </div>
 </div>
 
-<!-- Add Screen -->
 <div class="screen" id="screenAdd">
   <div class="form-group">
     <label class="form-label">Detalj ID</label>
@@ -66,7 +507,6 @@
   <button class="btn btn-primary" id="addSaveBtn" onclick="saveNew()">Spara</button>
 </div>
 
-<!-- Edit Screen (search) -->
 <div class="screen" id="screenEdit">
   <div class="search-wrap">
     <span class="search-icon">
@@ -79,7 +519,6 @@
   <div id="editSearchResults" class="edit-search-results"></div>
 </div>
 
-<!-- Edit Form Screen -->
 <div class="screen" id="screenEditForm">
   <div class="form-group">
     <label class="form-label">Detalj ID</label>
@@ -93,7 +532,6 @@
   <button class="btn btn-danger" onclick="confirmDelete()">Ta bort</button>
 </div>
 
-<!-- Import Screen -->
 <div class="screen" id="screenImport">
   <div class="file-input-wrap">
     <div class="file-input-label" id="fileLabel">
@@ -107,7 +545,6 @@
   <button class="btn btn-primary" id="importBtn" disabled onclick="confirmImport()">Importera</button>
 </div>
 
-<!-- Delete Dialog -->
 <div class="dialog-overlay" id="deleteDialog">
   <div class="dialog">
     <p>Är du säker på att du vill ta bort denna detalj?</p>
@@ -118,7 +555,6 @@
   </div>
 </div>
 
-<!-- Import Dialog -->
 <div class="dialog-overlay" id="importDialog">
   <div class="dialog">
     <p>Detta kommer ersätta all nuvarande data. Fortsätt?</p>
@@ -129,9 +565,296 @@
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<script src="app.js"></script>
+<script>
+let currentScreen = 'search';
+let editingOriginalId = null;
+let pendingImportData = null;
+
+const STORAGE_KEY = 'warehouse_components';
+
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function navigate(screen) {
+  closeMenu();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+  const titles = {
+    search: 'L101 Lager', detail: 'Detalj', add: 'Lägg till detalj',
+    edit: 'Ändra detalj', editForm: 'Ändra detalj', import: 'Importera data'
+  };
+
+  document.getElementById('headerTitle').textContent = titles[screen] || 'L101 Lager';
+  currentScreen = screen;
+
+  const left = document.getElementById('headerLeft');
+  if (screen === 'search') {
+    left.innerHTML = '';
+    left.className = 'header-spacer';
+  } else {
+    const backTarget = screen === 'editForm' ? 'edit' : 'search';
+    left.className = '';
+    left.innerHTML = `<button class="btn-back" onclick="navigate('${backTarget}')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Tillbaka
+    </button>`;
+  }
+
+  document.getElementById('screen' + screen.charAt(0).toUpperCase() + screen.slice(1)).classList.add('active');
+
+  if (screen === 'search') {
+    document.getElementById('searchInput').value = '';
+    renderSearchResults('');
+    setTimeout(() => document.getElementById('searchInput').focus(), 100);
+  } else if (screen === 'add') {
+    document.getElementById('addId').value = '';
+    document.getElementById('addLocation').value = '';
+    setTimeout(() => document.getElementById('addId').focus(), 100);
+  } else if (screen === 'edit') {
+    document.getElementById('editSearchInput').value = '';
+    renderEditSearchResults('');
+    setTimeout(() => document.getElementById('editSearchInput').focus(), 100);
+  } else if (screen === 'import') {
+    document.getElementById('fileInput').value = '';
+    document.getElementById('fileLabel').innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <span>Tryck för att välja JSON-fil</span>`;
+    document.getElementById('importBtn').disabled = true;
+    pendingImportData = null;
+  }
+}
+
+function toggleMenu() { document.getElementById('menuOverlay').classList.toggle('open'); }
+function closeMenu() { document.getElementById('menuOverlay').classList.remove('open'); }
+
+document.getElementById('menuBtn').addEventListener('click', toggleMenu);
+document.getElementById('menuBackdrop').addEventListener('click', closeMenu);
+
+function renderSearchResults(query) {
+  const container = document.getElementById('searchResults');
+  const data = loadData();
+
+  if (data.length === 0 && !query) {
+    container.innerHTML = `<div class="empty-state">
+      <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <br>Inga detaljer tillagda ännu.<br>Använd menyn för att lägga till detaljer.</div>`;
+    return;
+  }
+
+  const q = query.trim().toLowerCase();
+  const matches = q ? data.filter(c => c.id.toLowerCase().includes(q)) : data;
+
+  if (matches.length === 0) {
+    container.innerHTML = '<div class="no-results">Inga resultat hittades</div>';
+    return;
+  }
+
+  container.innerHTML = '<div class="results-list">' + matches.map(c =>
+    `<div class="result-item" onclick="showDetail('${escHtml(c.id)}')">
+      <span class="result-id">${escHtml(c.id)}</span>
+      <span class="result-arrow">&rarr;</span>
+      <span class="result-location">${escHtml(c.location)}</span>
+    </div>`
+  ).join('') + '</div>' +
+  `<div class="count-badge">${matches.length} detalj${matches.length !== 1 ? 'er' : ''}</div>`;
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  renderSearchResults(e.target.value);
+});
+
+function showDetail(id) {
+  const data = loadData();
+  const comp = data.find(c => c.id === id);
+  if (!comp) return;
+  document.getElementById('detailId').textContent = comp.id;
+  document.getElementById('detailLocation').textContent = comp.location;
+  navigate('detail');
+}
+
+function saveNew() {
+  const id = document.getElementById('addId').value.trim();
+  const location = document.getElementById('addLocation').value.trim();
+  if (!id || !location) { toast('Fyll i alla fält'); return; }
+
+  const data = loadData();
+  if (data.some(c => c.id === id)) { toast('Detalj ID finns redan'); return; }
+
+  data.push({ id, location });
+  saveData(data);
+  toast('Detalj sparad');
+  navigate('search');
+}
+
+function renderEditSearchResults(query) {
+  const container = document.getElementById('editSearchResults');
+  const data = loadData();
+  const q = query.trim().toLowerCase();
+
+  if (!q) { container.innerHTML = ''; return; }
+
+  const matches = data.filter(c => c.id.toLowerCase().includes(q));
+
+  if (matches.length === 0) {
+    container.innerHTML = '<div class="no-results">Inga resultat hittades</div>';
+    return;
+  }
+
+  container.innerHTML = matches.map(c =>
+    `<div class="result-item" onclick="openEditForm('${escHtml(c.id)}')">
+      <span class="result-id">${escHtml(c.id)}</span>
+      <span class="result-arrow">&rarr;</span>
+      <span class="result-location">${escHtml(c.location)}</span>
+    </div>`
+  ).join('');
+}
+
+document.getElementById('editSearchInput').addEventListener('input', e => {
+  renderEditSearchResults(e.target.value);
+});
+
+function openEditForm(id) {
+  const data = loadData();
+  const comp = data.find(c => c.id === id);
+  if (!comp) return;
+
+  editingOriginalId = comp.id;
+  document.getElementById('editId').value = comp.id;
+  document.getElementById('editLocation').value = comp.location;
+  navigate('editForm');
+}
+
+function saveEdit() {
+  const newId = document.getElementById('editId').value.trim();
+  const newLocation = document.getElementById('editLocation').value.trim();
+  if (!newId || !newLocation) { toast('Fyll i alla fält'); return; }
+
+  const data = loadData();
+  if (newId !== editingOriginalId && data.some(c => c.id === newId)) {
+    toast('Detalj ID finns redan');
+    return;
+  }
+
+  const idx = data.findIndex(c => c.id === editingOriginalId);
+  if (idx === -1) return;
+
+  data[idx] = { id: newId, location: newLocation };
+  saveData(data);
+  toast('Detalj uppdaterad');
+  navigate('search');
+}
+
+function confirmDelete() { document.getElementById('deleteDialog').classList.add('open'); }
+
+function deleteComponent() {
+  const data = loadData().filter(c => c.id !== editingOriginalId);
+  saveData(data);
+  closeDialog('deleteDialog');
+  toast('Detalj borttagen');
+  navigate('search');
+}
+
+function exportData() {
+  closeMenu();
+  const data = loadData();
+  if (data.length === 0) { toast('Ingen data att exportera'); return; }
+
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const ts = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
+  const filename = `detaljer_backup_${ts}.json`;
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Data exporterad');
+}
+
+document.getElementById('fileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  document.getElementById('fileLabel').innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+    </svg>
+    <span class="file-name">${escHtml(file.name)}</span>`;
+
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      const parsed = JSON.parse(evt.target.result);
+      if (!validateImportData(parsed)) {
+        toast('Ogiltig filstruktur');
+        pendingImportData = null;
+        document.getElementById('importBtn').disabled = true;
+        return;
+      }
+      pendingImportData = parsed;
+      document.getElementById('importBtn').disabled = false;
+    } catch {
+      toast('Kunde inte läsa JSON-filen');
+      pendingImportData = null;
+      document.getElementById('importBtn').disabled = true;
+    }
+  };
+  reader.readAsText(file);
+});
+
+function validateImportData(data) {
+  if (!Array.isArray(data)) return false;
+  return data.every(item =>
+    item && typeof item === 'object' &&
+    typeof item.id === 'string' && item.id.trim() !== '' &&
+    typeof item.location === 'string' && item.location.trim() !== ''
+  );
+}
+
+function confirmImport() {
+  if (!pendingImportData) return;
+  document.getElementById('importDialog').classList.add('open');
+}
+
+function doImport() {
+  closeDialog('importDialog');
+  saveData(pendingImportData);
+  toast(`${pendingImportData.length} detaljer importerade`);
+  pendingImportData = null;
+  navigate('search');
+}
+
+function closeDialog(id) { document.getElementById(id).classList.remove('open'); }
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+renderSearchResults('');
+</script>
 </body>
 </html>
