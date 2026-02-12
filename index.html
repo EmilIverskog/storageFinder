@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Detalj Sökare</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div id="headerLeft" class="header-spacer"></div>
+  <h1 id="headerTitle">Detalj Sökare</h1>
+  <button class="btn-menu" id="menuBtn" aria-label="Meny">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+</div>
+
+<!-- Menu -->
+<div class="menu-overlay" id="menuOverlay">
+  <div class="menu-backdrop" id="menuBackdrop"></div>
+  <div class="menu-panel">
+    <button class="menu-item" onclick="navigate('add')">Lägg till detalj</button>
+    <button class="menu-item" onclick="navigate('edit')">Ändra detalj</button>
+    <button class="menu-item" onclick="exportData()">Exportera data</button>
+    <button class="menu-item" onclick="navigate('import')">Importera data</button>
+    <button class="menu-item" onclick="navigate('search')">Tillbaka</button>
+  </div>
+</div>
+
+<!-- Search Screen -->
+<div class="screen active" id="screenSearch">
+  <div class="search-wrap">
+    <span class="search-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </span>
+    <input class="search-input" id="searchInput" type="text" inputmode="search" placeholder="Sök detalj ID..." autocomplete="off">
+  </div>
+  <div id="searchResults"></div>
+</div>
+
+<!-- Detail Screen -->
+<div class="screen" id="screenDetail">
+  <div class="detail-card">
+    <div class="detail-id" id="detailId"></div>
+    <div class="detail-divider">&#8595;</div>
+    <div class="detail-location" id="detailLocation"></div>
+  </div>
+</div>
+
+<!-- Add Screen -->
+<div class="screen" id="screenAdd">
+  <div class="form-group">
+    <label class="form-label">Detalj ID</label>
+    <input class="form-input" id="addId" type="text" inputmode="text" placeholder="T.ex. 029302" autocomplete="off">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Detalj plats</label>
+    <input class="form-input" id="addLocation" type="text" inputmode="text" placeholder="T.ex. B13" autocomplete="off">
+  </div>
+  <button class="btn btn-primary" id="addSaveBtn" onclick="saveNew()">Spara</button>
+</div>
+
+<!-- Edit Screen (search) -->
+<div class="screen" id="screenEdit">
+  <div class="search-wrap">
+    <span class="search-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </span>
+    <input class="search-input" id="editSearchInput" type="text" inputmode="search" placeholder="Sök detalj att ändra..." autocomplete="off">
+  </div>
+  <div id="editSearchResults" class="edit-search-results"></div>
+</div>
+
+<!-- Edit Form Screen -->
+<div class="screen" id="screenEditForm">
+  <div class="form-group">
+    <label class="form-label">Detalj ID</label>
+    <input class="form-input" id="editId" type="text" inputmode="text" autocomplete="off">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Detalj plats</label>
+    <input class="form-input" id="editLocation" type="text" inputmode="text" autocomplete="off">
+  </div>
+  <button class="btn btn-primary" onclick="saveEdit()">Spara</button>
+  <button class="btn btn-danger" onclick="confirmDelete()">Ta bort</button>
+</div>
+
+<!-- Import Screen -->
+<div class="screen" id="screenImport">
+  <div class="file-input-wrap">
+    <div class="file-input-label" id="fileLabel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <span>Tryck för att välja JSON-fil</span>
+    </div>
+    <input type="file" id="fileInput" accept=".json">
+  </div>
+  <button class="btn btn-primary" id="importBtn" disabled onclick="confirmImport()">Importera</button>
+</div>
+
+<!-- Delete Dialog -->
+<div class="dialog-overlay" id="deleteDialog">
+  <div class="dialog">
+    <p>Är du säker på att du vill ta bort denna detalj?</p>
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="closeDialog('deleteDialog')">Avbryt</button>
+      <button class="btn btn-danger" style="margin-top:0" onclick="deleteComponent()">Ta bort</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Dialog -->
+<div class="dialog-overlay" id="importDialog">
+  <div class="dialog">
+    <p>Detta kommer ersätta all nuvarande data. Fortsätt?</p>
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="closeDialog('importDialog')">Avbryt</button>
+      <button class="btn btn-primary" onclick="doImport()">Fortsätt</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
