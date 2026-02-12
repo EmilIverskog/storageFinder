@@ -222,6 +222,8 @@ body {
 }
 
 /* Detail view */
+#screenDetail { cursor: pointer; min-height: calc(100dvh - 60px); }
+
 .detail-card {
   background: var(--card);
   border-radius: 18px;
@@ -700,13 +702,12 @@ function renderSearchResults(query) {
       <span class="result-location">${escHtml(c.location)}</span>
     </div>`
   ).join('') + '</div>' +
-  `<div class="count-badge">${matches.length} Artikel${matches.length !== 1 ? 'ar' : ''}</div>`;
+  `<div class="count-badge">${matches.length} ${matches.length !== 1 ? 'Artiklar' : 'Artikel'}</div>`;
 }
 
 document.getElementById('searchInput').addEventListener('input', e => {
   renderSearchResults(e.target.value);
 });
-
 function showDetail(id) {
   const data = loadData();
   const comp = data.find(c => c.id === id);
@@ -727,7 +728,9 @@ function saveNew() {
   data.push({ id, location });
   saveData(data);
   toast('Artikel sparad');
-  navigate('search');
+  document.getElementById('addId').value = '';
+  document.getElementById('addLocation').value = '';
+  document.getElementById('addId').focus();
 }
 
 function renderEditSearchResults(query) {
@@ -892,6 +895,10 @@ function escHtml(s) {
 }
 
 renderSearchResults('');
+
+document.getElementById('screenDetail').addEventListener('click', function() {
+  if (currentScreen === 'detail') navigate('search');
+});
 </script>
 </body>
 </html>
