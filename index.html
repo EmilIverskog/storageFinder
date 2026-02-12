@@ -452,11 +452,11 @@ body {
   <div class="menu-panel">
     <button class="menu-item" onclick="navigate('add')">
       <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Lägg till detalj
+      Lägg till Artikel
     </button>
     <button class="menu-item" onclick="navigate('edit')">
       <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      Ändra detalj
+      Ändra Artikel
     </button>
     <button class="menu-item" onclick="exportData()">
       <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -484,14 +484,14 @@ body {
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
     </span>
-    <input class="search-input" id="searchInput" type="text" inputmode="search" placeholder="Sök detalj ID..." autocomplete="off">
+    <input class="search-input" id="searchInput" type="text" inputmode="search" placeholder="Sök Artikel ID..." autocomplete="off">
   </div>
   <div id="searchResults"></div>
 </div>
 
 <div class="screen" id="screenDetail">
   <div class="detail-card">
-    <div class="detail-label">Detalj ID</div>
+    <div class="detail-label">Artikel ID</div>
     <div class="detail-id" id="detailId"></div>
     <div class="detail-divider"></div>
     <div class="detail-label">Plats</div>
@@ -501,11 +501,11 @@ body {
 
 <div class="screen" id="screenAdd">
   <div class="form-group">
-    <label class="form-label">Detalj ID</label>
+    <label class="form-label">Artikel ID</label>
     <input class="form-input" id="addId" type="text" inputmode="text" placeholder="T.ex. 029302" autocomplete="off">
   </div>
   <div class="form-group">
-    <label class="form-label">Detalj plats</label>
+    <label class="form-label">Artikel plats</label>
     <input class="form-input" id="addLocation" type="text" inputmode="text" placeholder="T.ex. B13" autocomplete="off">
   </div>
   <button class="btn btn-primary" id="addSaveBtn" onclick="saveNew()">Spara</button>
@@ -518,18 +518,18 @@ body {
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
     </span>
-    <input class="search-input" id="editSearchInput" type="text" inputmode="search" placeholder="Sök detalj att ändra..." autocomplete="off">
+    <input class="search-input" id="editSearchInput" type="text" inputmode="search" placeholder="Sök Artikel att ändra..." autocomplete="off">
   </div>
   <div id="editSearchResults" class="edit-search-results"></div>
 </div>
 
 <div class="screen" id="screenEditForm">
   <div class="form-group">
-    <label class="form-label">Detalj ID</label>
+    <label class="form-label">Artikel ID</label>
     <input class="form-input" id="editId" type="text" inputmode="text" autocomplete="off">
   </div>
   <div class="form-group">
-    <label class="form-label">Detalj plats</label>
+    <label class="form-label">Artikel plats</label>
     <input class="form-input" id="editLocation" type="text" inputmode="text" autocomplete="off">
   </div>
   <button class="btn btn-primary" onclick="saveEdit()">Spara</button>
@@ -559,7 +559,7 @@ body {
 
 <div class="dialog-overlay" id="deleteDialog">
   <div class="dialog">
-    <p>Är du säker på att du vill ta bort denna detalj?</p>
+    <p>Är du säker på att du vill ta bort denna Artikel?</p>
     <div class="btn-row">
       <button class="btn btn-outline" onclick="closeDialog('deleteDialog')">Avbryt</button>
       <button class="btn btn-danger" style="margin-top:0" onclick="deleteComponent()">Ta bort</button>
@@ -607,8 +607,8 @@ function navigate(screen) {
 
   const appName = getTitle();
   const titles = {
-    search: appName, detail: 'Detalj', add: 'Lägg till detalj',
-    edit: 'Ändra detalj', editForm: 'Ändra detalj', import: 'Importera data',
+    search: appName, detail: 'Artikel', add: 'Lägg till Artikel',
+    edit: 'Ändra Artikel', editForm: 'Ändra Artikel', import: 'Importera data',
     settings: 'Ändra namn'
   };
 
@@ -681,7 +681,7 @@ function renderSearchResults(query) {
       <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
-      <br>Inga detaljer tillagda ännu.<br>Använd menyn för att lägga till detaljer.</div>`;
+      <br>Inga Artiklar tillagda ännu.<br>Använd menyn för att lägga till Artiklar.</div>`;
     return;
   }
 
@@ -700,7 +700,7 @@ function renderSearchResults(query) {
       <span class="result-location">${escHtml(c.location)}</span>
     </div>`
   ).join('') + '</div>' +
-  `<div class="count-badge">${matches.length} detalj${matches.length !== 1 ? 'er' : ''}</div>`;
+  `<div class="count-badge">${matches.length} Artikel${matches.length !== 1 ? 'ar' : ''}</div>`;
 }
 
 document.getElementById('searchInput').addEventListener('input', e => {
@@ -722,11 +722,11 @@ function saveNew() {
   if (!id || !location) { toast('Fyll i alla fält'); return; }
 
   const data = loadData();
-  if (data.some(c => c.id === id)) { toast('Detalj ID finns redan'); return; }
+  if (data.some(c => c.id === id)) { toast('Artikel ID finns redan'); return; }
 
   data.push({ id, location });
   saveData(data);
-  toast('Detalj sparad');
+  toast('Artikel sparad');
   navigate('search');
 }
 
@@ -775,7 +775,7 @@ function saveEdit() {
 
   const data = loadData();
   if (newId !== editingOriginalId && data.some(c => c.id === newId)) {
-    toast('Detalj ID finns redan');
+    toast('Artikel ID finns redan');
     return;
   }
 
@@ -784,7 +784,7 @@ function saveEdit() {
 
   data[idx] = { id: newId, location: newLocation };
   saveData(data);
-  toast('Detalj uppdaterad');
+  toast('Artikel uppdaterad');
   navigate('search');
 }
 
@@ -794,7 +794,7 @@ function deleteComponent() {
   const data = loadData().filter(c => c.id !== editingOriginalId);
   saveData(data);
   closeDialog('deleteDialog');
-  toast('Detalj borttagen');
+  toast('Artikel borttagen');
   navigate('search');
 }
 
@@ -806,7 +806,7 @@ function exportData() {
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
   const ts = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
-  const filename = `detaljer_backup_${ts}.json`;
+  const filename = `artiklar_backup_${ts}.json`;
 
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
@@ -865,7 +865,7 @@ function confirmImport() {
 function doImport() {
   closeDialog('importDialog');
   saveData(pendingImportData);
-  toast(`${pendingImportData.length} detaljer importerade`);
+  toast(`${pendingImportData.length} Artiklar importerade`);
   pendingImportData = null;
   navigate('search');
 }
