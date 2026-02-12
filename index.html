@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>L101 Lager</title>
+<title>L101 Lagerplatser</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -466,6 +466,10 @@ body {
       <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       Importera data
     </button>
+    <button class="menu-item" onclick="navigate('settings')">
+      <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Ändra namn
+    </button>
     <button class="menu-item" onclick="navigate('search')">
       <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
       Tillbaka
@@ -545,6 +549,14 @@ body {
   <button class="btn btn-primary" id="importBtn" disabled onclick="confirmImport()">Importera</button>
 </div>
 
+<div class="screen" id="screenSettings">
+  <div class="form-group">
+    <label class="form-label">Appnamn</label>
+    <input class="form-input" id="settingsTitle" type="text" inputmode="text" placeholder="T.ex. L101 Lager" autocomplete="off">
+  </div>
+  <button class="btn btn-primary" onclick="saveTitle()">Spara</button>
+</div>
+
 <div class="dialog-overlay" id="deleteDialog">
   <div class="dialog">
     <p>Är du säker på att du vill ta bort denna detalj?</p>
@@ -573,6 +585,12 @@ let editingOriginalId = null;
 let pendingImportData = null;
 
 const STORAGE_KEY = 'warehouse_components';
+const TITLE_KEY = 'warehouse_title';
+const DEFAULT_TITLE = 'L101 Lager';
+
+function getTitle() {
+  return localStorage.getItem(TITLE_KEY) || DEFAULT_TITLE;
+}
 
 function loadData() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
@@ -587,12 +605,14 @@ function navigate(screen) {
   closeMenu();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
 
+  const appName = getTitle();
   const titles = {
-    search: 'L101 Lager', detail: 'Detalj', add: 'Lägg till detalj',
-    edit: 'Ändra detalj', editForm: 'Ändra detalj', import: 'Importera data'
+    search: appName, detail: 'Detalj', add: 'Lägg till detalj',
+    edit: 'Ändra detalj', editForm: 'Ändra detalj', import: 'Importera data',
+    settings: 'Ändra namn'
   };
 
-  document.getElementById('headerTitle').textContent = titles[screen] || 'L101 Lager';
+  document.getElementById('headerTitle').textContent = titles[screen] || appName;
   currentScreen = screen;
 
   const left = document.getElementById('headerLeft');
@@ -631,7 +651,19 @@ function navigate(screen) {
       <span>Tryck för att välja JSON-fil</span>`;
     document.getElementById('importBtn').disabled = true;
     pendingImportData = null;
+  } else if (screen === 'settings') {
+    document.getElementById('settingsTitle').value = getTitle();
+    setTimeout(() => document.getElementById('settingsTitle').focus(), 100);
   }
+}
+
+function saveTitle() {
+  const title = document.getElementById('settingsTitle').value.trim();
+  if (!title) { toast('Fyll i ett namn'); return; }
+  localStorage.setItem(TITLE_KEY, title);
+  document.title = title;
+  toast('Namn sparat');
+  navigate('search');
 }
 
 function toggleMenu() { document.getElementById('menuOverlay').classList.toggle('open'); }
@@ -839,6 +871,11 @@ function doImport() {
 }
 
 function closeDialog(id) { document.getElementById(id).classList.remove('open'); }
+
+// --- Init title ---
+const savedTitle = getTitle();
+document.getElementById('headerTitle').textContent = savedTitle;
+document.title = savedTitle;
 
 function toast(msg) {
   const el = document.getElementById('toast');
