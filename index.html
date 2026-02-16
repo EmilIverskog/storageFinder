@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>L101 Lagerplatser</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -546,7 +547,7 @@ body {
       </svg>
       <span>Tryck för att välja JSON-fil</span>
     </div>
-    <input type="file" id="fileInput" accept=".json">
+    <input type="file" id="fileInput" accept=".xlsx">
   </div>
   <button class="btn btn-primary" id="importBtn" disabled onclick="confirmImport()">Importera</button>
 </div>
@@ -809,14 +810,18 @@ function exportData() {
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
   const ts = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
-  const filename = `artiklar_backup_${ts}.json`;
+  const filename = `artiklar_backup_${ts}.xlsx`;
 
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(a.href);
+  // Create worksheet data with columns F and H
+  const wsData = [
+    ['', '', '', '', '', 'Lagerplats', '', 'Artikelnummer'], // Header row
+    ...data.map(item => ['', '', '', '', '', item.location, '', item.id])
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Artiklar');
+  XLSX.writeFile(wb, filename);
   toast('Data exporterad');
 }
 
@@ -833,32 +838,42 @@ document.getElementById('fileInput').addEventListener('change', e => {
   const reader = new FileReader();
   reader.onload = evt => {
     try {
-      const parsed = JSON.parse(evt.target.result);
-      if (!validateImportData(parsed)) {
-        toast('Ogiltig filstruktur');
+      const wb = XLSX.read(evt.target.result, { type: 'binary' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+      // Extract columns F (index 5) and H (index 7)
+      const parsed = [];
+      for (let i = 1; i < jsonData.length; i++) { // Skip header row
+        const row = jsonData[i];
+        const location = row[5]; // Column F
+        const id = row[7];        // Column H
+
+        if (location && id && String(location).trim() && String(id).trim()) {
+          parsed.push({
+            id: String(id).trim(),
+            location: String(location).trim()
+          });
+        }
+      }
+
+      if (parsed.length === 0) {
+        toast('Inga giltiga artiklar hittades');
         pendingImportData = null;
         document.getElementById('importBtn').disabled = true;
         return;
       }
+
       pendingImportData = parsed;
       document.getElementById('importBtn').disabled = false;
     } catch {
-      toast('Kunde inte läsa JSON-filen');
+      toast('Kunde inte läsa XLSX-filen');
       pendingImportData = null;
       document.getElementById('importBtn').disabled = true;
     }
   };
-  reader.readAsText(file);
+  reader.readAsBinaryString(file);
 });
-
-function validateImportData(data) {
-  if (!Array.isArray(data)) return false;
-  return data.every(item =>
-    item && typeof item === 'object' &&
-    typeof item.id === 'string' && item.id.trim() !== '' &&
-    typeof item.location === 'string' && item.location.trim() !== ''
-  );
-}
 
 function confirmImport() {
   if (!pendingImportData) return;
